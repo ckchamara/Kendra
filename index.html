@@ -2,33 +2,129 @@
 <html lang="si">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Sri Lankan Astrology Chart</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --border-color: #000;
-    --hover-bg: rgba(0, 0, 0, 0.05);
-    --active-bg: rgba(0, 0, 0, 0.1);
+    --border-color: #94A3B8;
+    --hover-bg: #EFF6FF;
+    --active-bg: #DBEAFE;
+    --primary: #3B82F6;
+    --primary-hover: #2563EB;
+    --bg-color: #F1F5F9;
+    --card-bg: #FFFFFF;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --radius: 14px;
+    --green: #10B981;
+    --purple: #8B5CF6;
+    --red: #EF4444;
+    --header-bg: #FFFFFF;
+    --header-border: #E2E8F0;
+    --input-bg: #F1F5F9;
+    --popover-bg: #FFFFFF;
+  }
+
+  [data-theme="dark"] {
+    --border-color: #334155;
+    --hover-bg: #1E293B;
+    --active-bg: #1E3A5F;
+    --primary: #60A5FA;
+    --primary-hover: #3B82F6;
+    --bg-color: #0F172A;
+    --card-bg: #1E293B;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+    --text-main: #F1F5F9;
+    --text-muted: #94A3B8;
+    --green: #34D399;
+    --purple: #A78BFA;
+    --red: #F87171;
+    --header-bg: #1E293B;
+    --header-border: #334155;
+    --input-bg: #0F172A;
+    --popover-bg: #1E293B;
   }
   
+  * { box-sizing: border-box; }
+
   body {
     margin: 0;
-    padding: 30px 20px;
+    padding: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #f9f9fc;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-main);
+  }
+
+  /* Page Header */
+  .page-header {
+    width: 100%;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--header-border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .page-header-center {
+    text-align: center;
+    flex: 1;
+  }
+  .page-header h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+  }
+  .page-header p {
+    margin: 2px 0 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* Dark mode toggle button */
+  .theme-toggle {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+  .theme-toggle:hover { background: var(--hover-bg); }
+
+  .page-content {
+    width: 100%;
+    max-width: 1120px;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
   }
 
   .main-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 40px;
+    gap: 24px;
     justify-content: center;
     width: 100%;
-    max-width: 1200px;
   }
 
   .chart-section {
@@ -36,18 +132,27 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 500px;
+    max-width: 480px;
+    gap: 12px;
+  }
+
+  .chart-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    align-self: flex-start;
   }
 
   .chart-wrapper {
-    padding: 20px;
-    background: #fff;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-    border-radius: 12px;
+    padding: 12px;
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    border-radius: var(--radius);
     width: 100%;
     display: flex;
     justify-content: center;
-    box-sizing: border-box;
   }
 
   .chart {
@@ -56,18 +161,17 @@
     grid-template-rows: repeat(3, 1fr);
     width: 100%;
     aspect-ratio: 1 / 1;
-    max-width: 450px;
-    max-height: 450px;
-    background: #fff;
-    border-top: 2px solid var(--border-color);
-    border-left: 2px solid var(--border-color);
+    background: var(--card-bg);
+    border-top: 1.5px solid var(--border-color);
+    border-left: 1.5px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
   }
 
   .cell {
-    border-right: 2px solid var(--border-color);
-    border-bottom: 2px solid var(--border-color);
+    border-right: 1.5px solid var(--border-color);
+    border-bottom: 1.5px solid var(--border-color);
     position: relative;
-    box-sizing: border-box;
   }
 
   .center-cell {
@@ -86,15 +190,20 @@
     border: none;
     background: transparent;
     outline: none;
-    color: #222;
+    color: var(--text-main);
     font-family: inherit;
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
   }
+  .center-input option,
+  .center-input optgroup {
+    background: var(--card-bg);
+    color: var(--text-main);
+  }
   
-  .center-input:focus { color: #000; }
+  .center-input:focus { color: var(--text-main); }
 
   /* Compartment styling for hitboxes */
   .compartment {
@@ -136,7 +245,7 @@
   }
   .bg-line line {
     stroke: var(--border-color);
-    stroke-width: 2;
+    stroke-width: 1;
   }
 
   /* Text layout */
@@ -146,8 +255,8 @@
     justify-content: center;
     align-items: center;
     text-align: center;
-    font-weight: 700;
-    color: #111;
+    font-weight: 600;
+    color: var(--text-main);
     font-size: clamp(0.85rem, 2.5vmin, 1.1rem);
     pointer-events: none;
     z-index: 1;
@@ -172,136 +281,168 @@
   /* Floating Popover */
   .popover {
     position: absolute;
-    background: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
-    padding: 16px;
-    border-radius: 10px;
+    background: var(--popover-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1);
+    padding: 14px;
+    border-radius: 12px;
     z-index: 1000;
     width: max-content;
     display: none;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 6px;
     visibility: hidden;
   }
   
   .popover.active {
     display: grid;
-    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: popIn 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
   
   @keyframes popIn {
-    from { opacity: 0; transform: scale(0.95) translateY(-5px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from { opacity: 0; transform: scale(0.93) translateY(-6px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
   }
 
   .popover label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
-    font-size: 1.15rem;
-    color: #333;
-    padding: 6px 10px;
+    font-size: 1rem;
+    color: var(--text-main);
+    padding: 5px 8px;
     border-radius: 6px;
-    transition: background 0.15s;
+    transition: background 0.12s;
     font-weight: 500;
   }
-  .popover label:hover { background: #f0f0f5; }
-  .popover input[type="checkbox"] { width: 18px; height: 18px; accent-color: #222; cursor: pointer; }
+  .popover label:hover { background: var(--hover-bg); }
+  .popover input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
 
-  /* Export Buttons */
+  /* Buttons */
   .btn-group {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
-    margin-top: 15px;
   }
+
   .action-btn {
-    flex: 1;
-    background: #222;
+    padding: 10px 18px;
     color: #fff;
     border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: opacity 0.15s, transform 0.15s;
+    background: var(--primary);
   }
-  .action-btn:hover { background: #444; }
-  .action-btn:active { transform: translateY(2px); box-shadow: none; }
-  
-  .ai-btn { background: #4a148c; }
-  .ai-btn:hover { background: #6a1b9a; }
+  .action-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+  .action-btn:active { opacity: 1;    transform: translateY(0);    }
 
-  .reset-btn { background: #d32f2f; }
-  .reset-btn:hover { background: #e53935; }
+  .save-btn  { background: var(--green);  }
+  .ai-btn    { background: var(--purple); }
+  .reset-btn { background: var(--red);    }
 
   .global-actions {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 10px;
     width: 100%;
-    max-width: 1040px; /* Aligns roughly with two charts */
-    margin-top: 30px;
   }
   .global-actions .action-btn {
-    flex: 0 1 300px;
-    padding: 15px;
-    font-size: 1.1rem;
+    flex: 1;
+    max-width: 260px;
+    padding: 14px;
+    font-size: 0.95rem;
   }
 
-  /* Birth Details Card */
-  .birth-details-card {
-    background: #fff;
+  /* Cards (shared) */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     width: 100%;
-    box-sizing: border-box;
   }
-  .birth-details-card h3 {
-    margin: 0 0 15px 0;
-    font-size: 1.1rem;
-    color: #333;
+  .card-title {
+    margin: 0 0 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
+
+  /* Birth Details */
   .input-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 12px;
   }
   .input-group {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-width: 200px;
+    min-width: 140px;
   }
   .input-group label {
-    font-size: 0.9rem;
-    color: #666;
+    font-size: 0.78rem;
+    color: var(--text-muted);
     margin-bottom: 5px;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
   }
   .input-group input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    border-radius: 8px;
     font-family: inherit;
-    font-size: 1rem;
-    color: #222;
+    font-size: 0.92rem;
+    color: var(--text-main);
+    transition: border-color 0.15s, background 0.15s;
   }
   .input-group input:focus {
     outline: none;
-    border-color: #888;
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
   }
 
-  /* Modal UI */
+  /* Saved Charts */
+  .saved-actions {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .saved-actions select {
+    flex: 2;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .saved-actions select:focus { border-color: var(--primary); }
+  .saved-actions .action-btn {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  /* Modal */
   .modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -310,102 +451,128 @@
     pointer-events: none;
     transition: opacity 0.2s;
   }
-  .modal-overlay.active {
-    opacity: 1;
-    pointer-events: all;
-  }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
   .modal-content {
     background: #fff;
-    width: 90%;
-    max-width: 600px;
-    border-radius: 12px;
+    width: 92%;
+    max-width: 580px;
+    border-radius: var(--radius);
     padding: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    transform: translateY(-20px);
+    gap: 14px;
+    transform: translateY(-16px);
     transition: transform 0.2s;
   }
-  .modal-overlay.active .modal-content {
-    transform: translateY(0);
-  }
+  .modal-overlay.active .modal-content { transform: translateY(0); }
   .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .modal-header h3 { margin: 0; font-size: 1.3rem; color: #111; }
-  .close-modal {
-    background: transparent;
-    border: none;
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: #666;
-    line-height: 1;
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
   }
-  .close-modal:hover { color: #000; }
+  .close-modal {
+    background: var(--bg-color);
+    border: none;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .close-modal:hover { background: #E2E8F0; color: var(--text-main); }
   
   #exportTextarea {
     width: 100%;
-    height: 350px;
-    padding: 15px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-family: monospace;
-    font-size: 14px;
+    height: 320px;
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
     resize: vertical;
     white-space: pre;
     overflow-x: auto;
-    background: #fdfdfd;
+    background: var(--input-bg);
+    color: var(--text-main);
+    line-height: 1.6;
   }
-  #exportTextarea:focus { outline: none; border-color: #999; }
+  #exportTextarea:focus { outline: none; border-color: var(--primary); }
   
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-  }
-  .modal-actions .action-btn { flex: none; min-width: 150px; }
+  .modal-actions { display: flex; justify-content: flex-end; }
+  .modal-actions .action-btn { flex: none; min-width: 140px; }
 
-  /* Mobile Responsiveness */
+  /* Smooth dark mode transitions */
+  body, .page-header, .card, .chart-wrapper, .modal-content,
+  .input-group input, .saved-actions select, #exportTextarea,
+  .popover, .action-btn { transition: background 0.25s, color 0.25s, border-color 0.25s; }
+
+  /* Responsive */
   @media (max-width: 768px) {
-    body { padding: 15px 10px; }
-    .chart-wrapper { padding: 10px; }
-    .birth-details-card { padding: 15px; }
-    
-    .comp-text { font-size: clamp(0.7rem, 3.5vw, 1rem); }
-    .center-input { font-size: clamp(0.8rem, 4vw, 1.1rem); }
-    
+    .page-content { padding: 12px; gap: 14px; }
+    .main-container { gap: 14px; }
+    .chart-wrapper { padding: 8px; }
+    .card { padding: 14px; }
+
+    .input-row { flex-direction: column; gap: 10px; }
+    .input-group { min-width: 100%; }
+
+    .comp-text { font-size: clamp(0.62rem, 3.2vw, 0.9rem); }
+    .center-input { font-size: clamp(0.7rem, 3.8vw, 1rem); }
+
     .global-actions {
       flex-direction: column;
-      align-items: stretch;
-      padding: 0 10px;
-      box-sizing: border-box;
+      gap: 8px;
     }
     .global-actions .action-btn {
       max-width: none;
       width: 100%;
     }
-    
+
+    .saved-actions { flex-direction: column; gap: 8px; }
+    .saved-actions .action-btn { flex: none; }
+
     .popover {
       grid-template-columns: repeat(3, 1fr);
-      padding: 12px;
-      gap: 8px;
+      padding: 10px;
+      gap: 5px;
     }
-    .popover label {
-      font-size: 1rem;
-    }
+    .popover label { font-size: 0.9rem; padding: 4px 5px; }
+
+    .modal-content { padding: 16px; }
   }
 </style>
 </head>
 <body>
 
+<header class="page-header">
+  <div style="width:38px;"></div>
+  <div class="page-header-center">
+    <h1>ජාතක ලේඛනය</h1>
+    <p>Sri Lankan Astrology Chart</p>
+  </div>
+  <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">☀️</button>
+</header>
+
+<div class="page-content">
+
 <div class="main-container">
   
-  <div class="birth-details-card">
-    <h3>Birth Details (Optional)</h3>
+  <div class="card" style="width:100%;">
+    <p class="card-title">Birth Details</p>
     <div class="input-row">
+      <div class="input-group">
+        <label>Name</label>
+        <input type="text" id="birthName" placeholder="e.g. Chamara">
+      </div>
       <div class="input-group">
         <label>Date of Birth</label>
         <input type="text" id="birthDate" placeholder="e.g. 1990-01-01">
@@ -423,6 +590,7 @@
 
   <!-- RASI CHART -->
   <div class="chart-section" id="rasi-section">
+    <span class="chart-label">ලග්න කේන්ද්‍රය · Rasi Chart</span>
     <div class="chart-wrapper">
       <div class="chart" id="rasi-chart">
         <div class="cell">
@@ -471,12 +639,13 @@
       </div>
     </div>
     <div class="btn-group">
-      <button class="action-btn" onclick="openExportModal('rasi', 'ascii')">ASCII</button>
+      <button class="action-btn" onclick="openExportModal('rasi', 'ascii')" style="flex:1">ASCII</button>
     </div>
   </div>
 
   <!-- NAVAMSA CHART -->
   <div class="chart-section" id="navamsa-section">
+    <span class="chart-label">නවාංශ කේන්ද්‍රය · Navamsa Chart</span>
     <div class="chart-wrapper">
       <div class="chart" id="navamsa-chart">
         <div class="cell">
@@ -525,16 +694,31 @@
       </div>
     </div>
     <div class="btn-group">
-      <button class="action-btn" onclick="openExportModal('navamsa', 'ascii')">ASCII</button>
+      <button class="action-btn" onclick="openExportModal('navamsa', 'ascii')" style="flex:1">ASCII</button>
     </div>
   </div>
 
 </div>
 
-<!-- Global Actions (Apply to both) -->
+<!-- Saved Charts Section -->
+<div class="card" style="max-width:1040px;">
+  <p class="card-title">Saved Charts</p>
+  <div class="saved-actions">
+    <select id="savedChartsDropdown">
+      <option value="" disabled selected>Select a saved chart...</option>
+    </select>
+    <button class="action-btn" onclick="loadChart()">Load</button>
+    <button class="action-btn reset-btn" onclick="deleteChart()">Delete</button>
+  </div>
+</div>
+
+<!-- Global Actions -->
 <div class="global-actions">
+  <button class="action-btn save-btn" onclick="saveChart()">Save Chart</button>
   <button class="action-btn ai-btn" onclick="openExportModal('both', 'ai')">Export Both Charts for AI</button>
   <button class="action-btn reset-btn" onclick="resetAll()">Reset All</button>
+</div>
+
 </div>
 
 <!-- Dynamic Popover -->
@@ -555,6 +739,33 @@
 </div>
 
 <script>
+  // ── Dark Mode ──────────────────────────────────────────────────────────────
+  const html = document.documentElement;
+  const toggleBtn = document.getElementById('themeToggle');
+
+  function applyTheme(dark) {
+    html.setAttribute('data-theme', dark ? 'dark' : 'light');
+    toggleBtn.textContent = dark ? '🌙' : '☀️';
+  }
+
+  function toggleTheme() {
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const next = !isDark;
+    localStorage.setItem('kendra-theme', next ? 'dark' : 'light');
+    applyTheme(next);
+  }
+
+  toggleBtn.addEventListener('click', toggleTheme);
+
+  // Initialise from saved preference or system setting
+  const saved = localStorage.getItem('kendra-theme');
+  if (saved) {
+    applyTheme(saved === 'dark');
+  } else {
+    applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
   const planets = [
     'ර', 'ච', 'කු', 'බු', 'ගු', 'ශු', 'ශ', 'රා', 'කේ', 'ල',
     '(කු)', '(බු)', '(ගු)', '(ශු)', '(ශ)',
@@ -721,9 +932,126 @@
   function resetAll() {
     resetChart('rasi');
     resetChart('navamsa');
+    document.getElementById('birthName').value = '';
     document.getElementById('birthDate').value = '';
     document.getElementById('birthTime').value = '';
     document.getElementById('birthPlace').value = '';
+  }
+
+  // API Integration for Save/Load
+  const API_URL = '/api/charts';
+
+  async function fetchSavedCharts() {
+    try {
+      const res = await fetch(API_URL);
+      const charts = await res.json();
+      const dropdown = document.getElementById('savedChartsDropdown');
+      dropdown.innerHTML = '<option value="" disabled selected>Select a saved chart...</option>';
+      charts.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.id;
+        dropdown.appendChild(opt);
+      });
+      window.savedChartsData = charts;
+    } catch (err) {
+      console.error('Failed to fetch charts', err);
+    }
+  }
+
+  // Fetch charts when page loads
+  fetchSavedCharts();
+
+  async function saveChart() {
+    const name = document.getElementById('birthName').value.trim();
+    const date = document.getElementById('birthDate').value.trim();
+    if (!name || !date) {
+      alert("Please enter both Name and Date of Birth to save a chart.");
+      return;
+    }
+
+    const year = date.split('-')[0] || date;
+    const id = `${year} - ${name}`;
+
+    const rasiSelect = document.querySelector('#rasi-chart .title-select');
+    const navamsaSelect = document.querySelector('#navamsa-chart .title-select');
+
+    const chartData = {
+      id,
+      name,
+      date,
+      time: document.getElementById('birthTime').value,
+      place: document.getElementById('birthPlace').value,
+      rasiLagna: rasiSelect ? rasiSelect.value : "1",
+      navamsaLagna: navamsaSelect ? navamsaSelect.value : "1",
+      state: state
+    };
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(chartData)
+      });
+      if (res.ok) {
+        alert(`Chart for "${id}" saved successfully!`);
+        fetchSavedCharts();
+      } else {
+        alert("Failed to save chart.");
+      }
+    } catch (err) {
+      alert("Error saving chart. Is the server running?");
+      console.error(err);
+    }
+  }
+
+  function loadChart() {
+    const dropdown = document.getElementById('savedChartsDropdown');
+    const id = dropdown.value;
+    if (!id || !window.savedChartsData) return;
+
+    const chartData = window.savedChartsData.find(c => c.id === id);
+    if (!chartData) return;
+
+    resetAll();
+
+    document.getElementById('birthName').value = chartData.name || '';
+    document.getElementById('birthDate').value = chartData.date || '';
+    document.getElementById('birthTime').value = chartData.time || '';
+    document.getElementById('birthPlace').value = chartData.place || '';
+
+    const rasiSelect = document.querySelector('#rasi-chart .title-select');
+    if (rasiSelect && chartData.rasiLagna) rasiSelect.value = chartData.rasiLagna;
+    
+    const navamsaSelect = document.querySelector('#navamsa-chart .title-select');
+    if (navamsaSelect && chartData.navamsaLagna) navamsaSelect.value = chartData.navamsaLagna;
+
+    if (chartData.state) {
+      Object.keys(chartData.state).forEach(key => {
+        state[key] = chartData.state[key];
+        const comp = document.getElementById(key);
+        if (comp) updateCompartmentText(comp);
+      });
+    }
+  }
+
+  async function deleteChart() {
+    const dropdown = document.getElementById('savedChartsDropdown');
+    const id = dropdown.value;
+    if (!id) return;
+
+    if (!confirm(`Are you sure you want to delete the chart for "${id}"?`)) return;
+
+    try {
+      const res = await fetch(`${API_URL}/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (res.ok) {
+        alert('Chart deleted.');
+        fetchSavedCharts();
+      }
+    } catch (err) {
+      alert("Error deleting chart.");
+      console.error(err);
+    }
   }
 
   // Export Logic
@@ -870,14 +1198,31 @@
     textarea.select();
     textarea.setSelectionRange(0, 99999);
     
-    navigator.clipboard.writeText(textarea.value).then(() => {
+    function onSuccess() {
       const btn = document.getElementById('modalCopyBtn');
       btn.textContent = 'Copied!';
       btn.style.background = '#4CAF50';
-    }).catch(err => {
-      console.error('Copy failed', err);
-      alert('Clipboard access denied. You can manually copy the text above.');
-    });
+    }
+
+    function fallbackCopy() {
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) onSuccess();
+        else alert('Could not copy automatically. Please long-press and copy manually.');
+      } catch (err) {
+        console.error('Fallback copy failed', err);
+        alert('Could not copy automatically. Please long-press and copy manually.');
+      }
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(textarea.value).then(onSuccess).catch(err => {
+        console.warn('Clipboard API failed, trying fallback...', err);
+        fallbackCopy();
+      });
+    } else {
+      fallbackCopy();
+    }
   }
 </script>
 </body>
