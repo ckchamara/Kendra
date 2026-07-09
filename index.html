@@ -368,6 +368,35 @@
   }
   .modal-actions .action-btn { flex: none; min-width: 150px; }
 
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    body { padding: 15px 10px; }
+    .chart-wrapper { padding: 10px; }
+    .birth-details-card { padding: 15px; }
+    
+    .comp-text { font-size: clamp(0.7rem, 3.5vw, 1rem); }
+    .center-input { font-size: clamp(0.8rem, 4vw, 1.1rem); }
+    
+    .global-actions {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    .global-actions .action-btn {
+      max-width: none;
+      width: 100%;
+    }
+    
+    .popover {
+      grid-template-columns: repeat(3, 1fr);
+      padding: 12px;
+      gap: 8px;
+    }
+    .popover label {
+      font-size: 1rem;
+    }
+  }
 </style>
 </head>
 <body>
