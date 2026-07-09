@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sri Lankan Astrology Chart</title>
+<style>
+  :root {
+    --border-color: #000;
+    --hover-bg: rgba(0, 0, 0, 0.05);
+    --active-bg: rgba(0, 0, 0, 0.1);
+  }
+  
+  body {
+    margin: 0;
+    padding: 30px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f9f9fc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .main-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+  }
+
+  .chart-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .chart-wrapper {
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border-radius: 12px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .chart {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 450px;
+    max-height: 450px;
+    background: #fff;
+    border-top: 2px solid var(--border-color);
+    border-left: 2px solid var(--border-color);
+  }
+
+  .cell {
+    border-right: 2px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .center-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5%;
+  }
+
+  .center-input {
+    width: 100%;
+    text-align: center;
+    text-align-last: center;
+    font-size: clamp(0.9rem, 3vmin, 1.2rem);
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: #222;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+  
+  .center-input:focus { color: #000; }
+
+  /* Compartment styling for hitboxes */
+  .compartment {
+    position: absolute;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    user-select: none;
+  }
+
+  .compartment:hover { background: var(--hover-bg); }
+  .compartment.active { background: var(--active-bg); }
+
+  .full-comp, .tri-comp {
+    width: 100%;
+    height: 100%;
+    top: 0; left: 0;
+  }
+  
+  /* CSS Clip Paths to split hit areas diagonally */
+  .tl-top { clip-path: polygon(0 0, 100% 0, 100% 100%); }
+  .tl-bot { clip-path: polygon(0 0, 100% 100%, 0 100%); }
+  
+  .tr-top { clip-path: polygon(0 0, 100% 0, 0 100%); }
+  .tr-bot { clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+
+  .br-top { clip-path: polygon(0 0, 100% 0, 100% 100%); }
+  .br-bot { clip-path: polygon(0 0, 100% 100%, 0 100%); }
+
+  .bl-top { clip-path: polygon(0 0, 100% 0, 0 100%); }
+  .bl-bot { clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+
+  /* Visual diagonal line using inline SVG */
+  .bg-line {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .bg-line line {
+    stroke: var(--border-color);
+    stroke-width: 2;
+  }
+
+  /* Text layout */
+  .comp-text {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: 700;
+    color: #111;
+    font-size: clamp(0.85rem, 2.5vmin, 1.1rem);
+    pointer-events: none;
+    z-index: 1;
+    padding: 3%;
+    box-sizing: border-box;
+    word-break: break-word;
+    line-height: 1.4;
+  }
+
+  .full-comp .comp-text {
+    width: 100%; height: 100%;
+    top: 0; left: 0;
+  }
+
+  .tri-comp .comp-text { width: 50%; height: 50%; }
+
+  .tl-top .comp-text, .br-top .comp-text { top: 0; right: 0; }
+  .tl-bot .comp-text, .br-bot .comp-text { bottom: 0; left: 0; }
+  .tr-top .comp-text, .bl-top .comp-text { top: 0; left: 0; }
+  .tr-bot .comp-text, .bl-bot .comp-text { bottom: 0; right: 0; }
+
+  /* Floating Popover */
+  .popover {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    padding: 16px;
+    border-radius: 10px;
+    z-index: 1000;
+    width: max-content;
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    visibility: hidden;
+  }
+  
+  .popover.active {
+    display: grid;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-5px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .popover label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 1.15rem;
+    color: #333;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    font-weight: 500;
+  }
+  .popover label:hover { background: #f0f0f5; }
+  .popover input[type="checkbox"] { width: 18px; height: 18px; accent-color: #222; cursor: pointer; }
+
+  /* Export Buttons */
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 15px;
+  }
+  .action-btn {
+    flex: 1;
+    background: #222;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .action-btn:hover { background: #444; }
+  .action-btn:active { transform: translateY(2px); box-shadow: none; }
+  
+  .ai-btn { background: #4a148c; }
+  .ai-btn:hover { background: #6a1b9a; }
+
+  .reset-btn { background: #d32f2f; }
+  .reset-btn:hover { background: #e53935; }
+
+  .global-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 1040px; /* Aligns roughly with two charts */
+    margin-top: 30px;
+  }
+  .global-actions .action-btn {
+    flex: 0 1 300px;
+    padding: 15px;
+    font-size: 1.1rem;
+  }
+
+  /* Birth Details Card */
+  .birth-details-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .birth-details-card h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #333;
+  }
+  .input-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 200px;
+  }
+  .input-group label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  .input-group input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #222;
+  }
+  .input-group input:focus {
+    outline: none;
+    border-color: #888;
+  }
+
+  /* Modal UI */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transform: translateY(-20px);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.active .modal-content {
+    transform: translateY(0);
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 { margin: 0; font-size: 1.3rem; color: #111; }
+  .close-modal {
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+  }
+  .close-modal:hover { color: #000; }
+  
+  #exportTextarea {
+    width: 100%;
+    height: 350px;
+    padding: 15px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    resize: vertical;
+    white-space: pre;
+    overflow-x: auto;
+    background: #fdfdfd;
+  }
+  #exportTextarea:focus { outline: none; border-color: #999; }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .modal-actions .action-btn { flex: none; min-width: 150px; }
+
+</style>
+</head>
+<body>
+
+<div class="main-container">
+  
+  <div class="birth-details-card">
+    <h3>Birth Details (Optional)</h3>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Date of Birth</label>
+        <input type="text" id="birthDate" placeholder="e.g. 1990-01-01">
+      </div>
+      <div class="input-group">
+        <label>Time of Birth</label>
+        <input type="text" id="birthTime" placeholder="e.g. 10:30 AM">
+      </div>
+      <div class="input-group">
+        <label>Place of Birth</label>
+        <input type="text" id="birthPlace" placeholder="e.g. Colombo, Sri Lanka">
+      </div>
+    </div>
+  </div>
+
+  <!-- RASI CHART -->
+  <div class="chart-section" id="rasi-section">
+    <div class="chart-wrapper">
+      <div class="chart" id="rasi-chart">
+        <div class="cell">
+          <svg class="bg-line" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" vector-effect="non-scaling-stroke" /></svg>
+          <div class="compartment tri-comp tl-top" id="rasi-1"><div class="comp-text"></div></div>
+          <div class="compartment tri-comp tl-bot" id="rasi-12"><div class="comp-text"></div></div>
+        </div>
+        <div class="cell"><div class="compartment full-comp" id="rasi-2"><div class="comp-text"></div></div></div>
+        <div class="cell">
+          <svg class="bg-line" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="100" y1="0" x2="0" y2="100" vector-effect="non-scaling-stroke" /></svg>
+          <div class="compartment tri-comp tr-top" id="rasi-3"><div class="comp-text"></div></div>
+          <div class="compartment tri-comp tr-bot" id="rasi-4"><div class="comp-text"></div></div>
+        </div>
+        <div class="cell"><div class="compartment full-comp" id="rasi-11"><div class="comp-text"></div></div></div>
+        <div class="cell center-cell">
+          <select class="center-input title-select">
+            <option value="" disabled>ලග්නය / නවාංශකය</option>
+            <optgroup label="ලග්නය">
+              <option value="1" selected>මේෂ ලග්නය</option>
+              <option value="2">වෘෂභ ලග්නය</option>
+              <option value="3">මිථුන ලග්නය</option>
+              <option value="4">කටක ලග්නය</option>
+              <option value="5">සිංහ ලග්නය</option>
+              <option value="6">කන්‍යා ලග්නය</option>
+              <option value="7">තුලා ලග්නය</option>
+              <option value="8">වෘශ්චික ලග්නය</option>
+              <option value="9">ධනු ලග්නය</option>
+              <option value="10">මකර ලග්නය</option>
+              <option value="11">කුම්භ ලග්නය</option>
+              <option value="12">මීන ලග්නය</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="cell"><div class="compartment full-comp" id="rasi-5"><div class="comp-text"></div></div></div>
+        <div class="cell">
+          <svg class="bg-line" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="100" y1="0" x2="0" y2="100" vector-effect="non-scaling-stroke" /></svg>
+          <div class="compartment tri-comp bl-top" id="rasi-10"><div class="comp-text"></div></div>
+          <div class="compartment tri-comp bl-bot" id="rasi-9"><div class="comp-text"></div></div>
+        </div>
+        <div class="cell"><div class="compartment full-comp" id="rasi-8"><div class="comp-text"></div></div></div>
+        <div class="cell">
+          <svg class="bg-line" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" vector-effect="non-scaling-stroke" /></svg>
+          <div class="compartment tri-comp br-top" id="rasi-6"><div class="comp-text"></div></div>
+          <div class="compartment tri-comp br-bot" id="rasi-7"><div class="comp-text"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="action-btn" onclick="openExportModal('rasi', 'ascii')">ASCII</button>
+    </div>
+  </div>
+
+  <!-- NAVAMSA CHART -->
+  <div class="chart-section" id="navamsa-section">
+    <div class="chart-wrapper">
+      <div class="chart" id="navamsa-chart">
+        <div class="cell">
+          <svg class="bg-line" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" vector-effect="non-scaling-stroke" /></svg>
+          <div class="compartment tri-comp tl-top" id="navamsa-1"><div class="comp-text"></div></div>
+          <div class="compartment tri-comp tl-bot" id="navamsa-12"><div class="comp-text"></div></div>
+        </div>
+        <div class="cell"><div class="compartment full-comp" id="navamsa-2"><div class="comp-text"></div></div></div>
+        <div class="cell">
+          <svg class="bg-line" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="100" y1="0" x2="0" y2="100" vector-effect="non-scaling-stroke" /></svg>
+          <div class="compartment tri-comp tr-top" id="navamsa-3"><div class="comp-text"></div></div>
+          <div class="compartment tri-comp tr-bot" id="navamsa-4"><div class="comp-text"></div></div>
+        </div>
+        <div class="cell"><div class="compartment full-comp" id="navamsa-11"><div class="comp-text"></div></div></div>
+        <div class="cell center-cell">
+          <select class="center-input title-select">
+            <option value="" disabled>ලග්නය / නවාංශකය</option>
+            <optgroup label="නවාංශකය">
+              <option value="1" selected>මේෂ නවාංශකය</option>
+              <option value="2">වෘෂභ නවාංශකය</option>
+              <option value="3">මිථුන නවාංශකය</option>
+              <option value="4">කටක නවාංශකය</option>
+              <option value="5">සිංහ නවාංශකය</option>
+              <option value="6">කන්‍යා නවාංශකය</option>
+              <option value="7">තුලා නවාංශකය</option>
+              <option value="8">වෘශ්චික නවාංශකය</option>
+              <option value="9">ධනු නවාංශකය</option>
+              <option value="10">මකර නවාංශකය</option>
+              <option value="11">කුම්භ නවාංශකය</option>
+              <option value="12">මීන නවාංශකය</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="cell"><div class="compartment full-comp" id="navamsa-5"><div class="comp-text"></div></div></div>
+        <div class="cell">
+          <svg class="bg-line" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="100" y1="0" x2="0" y2="100" vector-effect="non-scaling-stroke" /></svg>
+          <div class="compartment tri-comp bl-top" id="navamsa-10"><div class="comp-text"></div></div>
+          <div class="compartment tri-comp bl-bot" id="navamsa-9"><div class="comp-text"></div></div>
+        </div>
+        <div class="cell"><div class="compartment full-comp" id="navamsa-8"><div class="comp-text"></div></div></div>
+        <div class="cell">
+          <svg class="bg-line" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" vector-effect="non-scaling-stroke" /></svg>
+          <div class="compartment tri-comp br-top" id="navamsa-6"><div class="comp-text"></div></div>
+          <div class="compartment tri-comp br-bot" id="navamsa-7"><div class="comp-text"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="action-btn" onclick="openExportModal('navamsa', 'ascii')">ASCII</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Global Actions (Apply to both) -->
+<div class="global-actions">
+  <button class="action-btn ai-btn" onclick="openExportModal('both', 'ai')">Export Both Charts for AI</button>
+  <button class="action-btn reset-btn" onclick="resetAll()">Reset All</button>
+</div>
+
+<!-- Dynamic Popover -->
+<div class="popover" id="popover"></div>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal" onclick="handleModalClick(event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Export Chart</h3>
+      <button class="close-modal" onclick="closeModal()">×</button>
+    </div>
+    <textarea id="exportTextarea" readonly></textarea>
+    <div class="modal-actions">
+      <button class="action-btn copy-btn" id="modalCopyBtn" onclick="copyFromTextarea()">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const planets = ['ර', 'ච', 'කු', 'බු', 'ගු', 'ශු', 'ශ', 'රා', 'කේ', 'ල'];
+  const signNames = {
+    1: 'මේෂ (Aries)', 2: 'වෘෂභ (Taurus)', 3: 'මිථුන (Gemini)', 4: 'කටක (Cancer)',
+    5: 'සිංහ (Leo)', 6: 'කන්‍යා (Virgo)', 7: 'තුලා (Libra)', 8: 'වෘශ්චික (Scorpio)',
+    9: 'ධනු (Sagittarius)', 10: 'මකර (Capricorn)', 11: 'කුම්භ (Aquarius)', 12: 'මීන (Pisces)'
+  };
+  
+  const popover = document.getElementById('popover');
+  const state = {}; 
+  let activeCompartment = null;
+
+  planets.forEach(p => {
+    const label = document.createElement('label');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = p;
+    
+    checkbox.addEventListener('change', (e) => {
+      if (!activeCompartment) return;
+      const compId = activeCompartment.id;
+      if (!state[compId]) state[compId] = [];
+      
+      if (e.target.checked) {
+        state[compId].push(p);
+      } else {
+        state[compId] = state[compId].filter(val => val !== p);
+      }
+      updateCompartmentText(activeCompartment);
+    });
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(p));
+    popover.appendChild(label);
+  });
+
+  function updateCompartmentText(comp) {
+    const textDiv = comp.querySelector('.comp-text');
+    const selected = state[comp.id] || [];
+    const orderedSelected = planets.filter(p => selected.includes(p));
+    textDiv.textContent = orderedSelected.join(',');
+  }
+
+  function closePopover() {
+    popover.classList.remove('active');
+    popover.style.visibility = 'hidden';
+    if (activeCompartment) {
+      activeCompartment.classList.remove('active');
+      activeCompartment = null;
+    }
+  }
+
+  document.querySelectorAll('.compartment').forEach(comp => {
+    comp.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (activeCompartment === comp) { closePopover(); return; }
+      if (activeCompartment) { activeCompartment.classList.remove('active'); }
+
+      activeCompartment = comp;
+      activeCompartment.classList.add('active');
+
+      const selected = state[comp.id] || [];
+      popover.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = selected.includes(cb.value);
+      });
+
+      popover.style.visibility = 'hidden';
+      popover.classList.add('active');
+      
+      const popRect = popover.getBoundingClientRect();
+      const offset = 18; 
+      
+      let leftPos = e.pageX + offset;
+      let topPos = e.pageY + offset;
+
+      if (leftPos + popRect.width > window.innerWidth) { leftPos = e.pageX - popRect.width - offset; }
+      if (topPos + popRect.height > window.innerHeight) { topPos = e.pageY - popRect.height - offset; }
+      
+      leftPos = Math.max(15, leftPos);
+      topPos = Math.max(15, topPos);
+
+      popover.style.left = `${leftPos}px`;
+      popover.style.top = `${topPos}px`;
+      popover.style.visibility = 'visible';
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (activeCompartment && !popover.contains(e.target)) {
+      closePopover();
+    }
+  });
+  window.addEventListener('resize', closePopover);
+
+  // Auto-format Birth Date (YYYY-MM-DD)
+  document.getElementById('birthDate').addEventListener('input', function(e) {
+    if (e.inputType === 'deleteContentBackward') return;
+    let digits = e.target.value.replace(/\D/g, '').substring(0, 8);
+    let out = '';
+    
+    if (digits.length >= 4) {
+      out = digits.substring(0, 4) + '-';
+      if (digits.length >= 6) {
+        out += digits.substring(4, 6) + '-' + digits.substring(6);
+      } else {
+        out += digits.substring(4);
+      }
+    } else {
+      out = digits;
+    }
+    
+    e.target.value = out;
+  });
+
+  // Auto-format Birth Time (HH:MM AM/PM)
+  document.getElementById('birthTime').addEventListener('input', function(e) {
+    if (e.inputType === 'deleteContentBackward') return;
+    let v = e.target.value;
+    let digits = v.replace(/\D/g, '').substring(0, 4);
+    
+    // Auto-pad hours if user types 2-9 as first digit
+    if (digits.length === 1 && parseInt(digits[0]) > 1) {
+      digits = '0' + digits;
+    }
+    
+    let out = '';
+    if (digits.length >= 2) {
+      out = digits.substring(0, 2) + ':';
+      if (digits.length > 2) {
+        out += digits.substring(2);
+      }
+    } else {
+      out = digits;
+    }
+    
+    if (digits.length === 4) {
+      let letters = v.replace(/[^AaPp]/g, '').toUpperCase();
+      if (letters.includes('A')) out += ' AM';
+      else if (letters.includes('P')) out += ' PM';
+      else if (!out.endsWith(' ')) out += ' ';
+    }
+    
+    e.target.value = out;
+  });
+
+  // Reset Logic
+  function resetChart(type) {
+    for(let i=1; i<=12; i++) {
+      state[`${type}-${i}`] = [];
+      const textDiv = document.querySelector(`#${type}-${i} .comp-text`);
+      if(textDiv) textDiv.textContent = '';
+    }
+    const select = document.querySelector(`#${type}-chart .title-select`);
+    if (select) select.value = "1";
+    
+    if (activeCompartment && activeCompartment.id.startsWith(type)) {
+      closePopover();
+    }
+  }
+
+  function resetAll() {
+    resetChart('rasi');
+    resetChart('navamsa');
+    document.getElementById('birthDate').value = '';
+    document.getElementById('birthTime').value = '';
+    document.getElementById('birthPlace').value = '';
+  }
+
+  // Export Logic
+  function padStr(str, len = 12) {
+    if (!str) return ' '.repeat(len);
+    let diff = len - str.length;
+    if (diff <= 0) return str.substring(0, len);
+    let left = Math.floor(diff / 2);
+    let right = diff - left;
+    return ' '.repeat(left) + str + ' '.repeat(right);
+  }
+
+  function generateAscii(type) {
+    const s = {};
+    for(let i = 1; i <= 12; i++) {
+      const val = state[`${type}-${i}`];
+      s[i] = val && val.length > 0 ? val.join(',') : '';
+    }
+    const titleSelect = document.querySelector(`#${type}-chart .title-select`);
+    let titleText = 'Unknown';
+    if (titleSelect && titleSelect.options.length > 0) {
+      titleText = titleSelect.options[titleSelect.selectedIndex].text;
+    }
+    const t = padStr(titleText, 26);
+
+    return `+------------+------------+------------+------------+
+|            |            |            |            |
+|${padStr(s[12])}|${padStr(s[1])}|${padStr(s[2])}|${padStr(s[3])}|
+|            |            |            |            |
++------------+------------+------------+------------+
+|            |                         |            |
+|${padStr(s[11])}|                         |${padStr(s[4])}|
+|            |                         |            |
++------------+${t}+------------+
+|            |                         |            |
+|${padStr(s[10])}|                         |${padStr(s[5])}|
+|            |                         |            |
++------------+------------+------------+------------+
+|            |            |            |            |
+|${padStr(s[9])}|${padStr(s[8])}|${padStr(s[7])}|${padStr(s[6])}|
+|            |            |            |            |
++------------+------------+------------+------------+`;
+  }
+
+  function getOrdinal(n) {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function getChartPromptData(type) {
+    const titleSelect = document.querySelector(`#${type}-chart .title-select`);
+    let lagnaIdx = 1;
+    let titleText = 'Unknown';
+    if (titleSelect && titleSelect.options.length > 0) {
+      lagnaIdx = parseInt(titleSelect.value) || 1;
+      titleText = titleSelect.options[titleSelect.selectedIndex].text;
+    }
+
+    let data = `**Ascendant (Lagna):** ${titleText}\n\n`;
+    data += `**Planetary Positions by House (Bhava):**\n`;
+    
+    for(let h = 1; h <= 12; h++) {
+      let signIdx = ((lagnaIdx + h - 2) % 12) + 1;
+      const val = state[`${type}-${signIdx}`];
+      const planetsStr = val && val.length > 0 ? val.join(', ') : '[Empty]';
+      data += `- ${getOrdinal(h)} House (${signNames[signIdx]}): ${planetsStr}\n`;
+    }
+    return data;
+  }
+
+  function isChartEmpty(type) {
+    for (let i = 1; i <= 12; i++) {
+      if (state[`${type}-${i}`] && state[`${type}-${i}`].length > 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function generateAIPrompt(type) {
+    const bDate = document.getElementById('birthDate').value;
+    const bTime = document.getElementById('birthTime').value;
+    const bPlace = document.getElementById('birthPlace').value;
+    
+    let header = ``;
+    if (bDate || bTime || bPlace) {
+      header += `**Birth Details:**\n`;
+      if (bDate) header += `- Date: ${bDate}\n`;
+      if (bTime) header += `- Time: ${bTime}\n`;
+      if (bPlace) header += `- Place: ${bPlace}\n`;
+      header += `\n`;
+    }
+
+    if (type === 'both') {
+      let prompt = header + `### 1. Rasi Chart (D1)\n` + getChartPromptData('rasi') + `\n\n`;
+      if (!isChartEmpty('navamsa')) {
+        prompt += `### 2. Navamsa Chart (D9)\n` + getChartPromptData('navamsa');
+      } else {
+        prompt += `*(Navamsa Chart not provided)*\n`;
+      }
+      return prompt;
+    } else {
+      const chartName = type === 'rasi' ? 'Rasi (D1)' : 'Navamsa (D9)';
+      return header + `**Chart Type:** ${chartName}\n` + getChartPromptData(type);
+    }
+  }
+
+  function openExportModal(type, format) {
+    const modal = document.getElementById('exportModal');
+    const textarea = document.getElementById('exportTextarea');
+    const title = document.getElementById('modalTitle');
+    
+    if (format === 'ascii') {
+      title.textContent = `ASCII Grid - ${type === 'rasi' ? 'Rasi' : 'Navamsa'}`;
+      textarea.value = generateAscii(type);
+    } else {
+      if (type === 'both') {
+        title.textContent = `AI Prompt - Rasi & Navamsa`;
+      } else {
+        title.textContent = `AI Prompt - ${type === 'rasi' ? 'Rasi' : 'Navamsa'}`;
+      }
+      textarea.value = generateAIPrompt(type);
+    }
+    
+    modal.classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('exportModal').classList.remove('active');
+    const btn = document.getElementById('modalCopyBtn');
+    btn.textContent = 'Copy to Clipboard';
+    btn.style.background = '#222';
+  }
+
+  function handleModalClick(e) {
+    if (e.target.id === 'exportModal') {
+      closeModal();
+    }
+  }
+
+  function copyFromTextarea() {
+    const textarea = document.getElementById('exportTextarea');
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+    
+    navigator.clipboard.writeText(textarea.value).then(() => {
+      const btn = document.getElementById('modalCopyBtn');
+      btn.textContent = 'Copied!';
+      btn.style.background = '#4CAF50';
+    }).catch(err => {
+      console.error('Copy failed', err);
+      alert('Clipboard access denied. You can manually copy the text above.');
+    });
+  }
+</script>
+</body>
+</html>
