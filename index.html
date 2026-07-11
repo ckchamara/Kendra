@@ -417,7 +417,7 @@
     letter-spacing: 0.03em;
     text-transform: uppercase;
   }
-  .input-group input {
+  .input-group input, .input-group select {
     padding: 10px 12px;
     border: 1px solid var(--border-color);
     background: var(--input-bg);
@@ -426,9 +426,9 @@
     font-size: 0.92rem;
     color: var(--text-main);
     transition: border-color 0.15s, background 0.15s;
-  }
-  .input-group input:focus {
     outline: none;
+  }
+  .input-group input:focus, .input-group select:focus {
     border-color: var(--primary);
     background: var(--card-bg);
     box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
@@ -457,6 +457,12 @@
     flex: 1;
     padding: 10px 12px;
     font-size: 0.85rem;
+  }
+  .saved-actions .delete-btn {
+    flex: 0 0 auto !important;
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+    align-self: center;
   }
 
   /* Modal */
@@ -558,15 +564,73 @@
   .lagna-btn:hover { background: var(--hover-bg); border-color: var(--primary); }
   .lagna-btn.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
 
+  /* 3-dots Dropdown */
+  .dots-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .dots-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    line-height: 1;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+  .dots-btn:hover, .dots-btn:focus {
+    background: var(--hover-bg);
+    color: var(--text-main);
+    outline: none;
+  }
+  .dots-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background-color: var(--popover-bg);
+    min-width: 140px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 200;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+  }
+  .dots-content button {
+    color: var(--red);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .dots-content button:hover {
+    background-color: var(--hover-bg);
+  }
+
   /* Responsive */
   @media (max-width: 768px) {
     .page-content { padding: 12px; gap: 14px; }
-    .main-container { gap: 14px; }
+    .main-container { gap: 14px; flex-direction: column; }
+    .chart-section { max-width: 100%; }
     .chart-wrapper { padding: 8px; }
-    .card { padding: 14px; }
+    .card { padding: 14px; width: 100%; box-sizing: border-box; }
 
     .input-row { flex-direction: column; gap: 10px; }
-    .input-group { min-width: 100%; }
+    .input-group { min-width: 100%; flex: none; }
 
     .comp-text { font-size: clamp(0.62rem, 3.2vw, 0.9rem); }
     .center-input { font-size: clamp(0.7rem, 3.8vw, 1rem); }
@@ -580,8 +644,28 @@
       width: 100%;
     }
 
-    .saved-actions { flex-direction: column; gap: 8px; }
-    .saved-actions .action-btn { flex: none; }
+    /* Saved Charts: keep dropdown + dots on one row */
+    .saved-actions {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .saved-actions select {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .saved-actions .action-btn {
+      flex: none;
+    }
+    /* Compare dropdowns stack vertically on mobile */
+    #compareChart1Dropdown,
+    #compareChart2Dropdown {
+      flex: 1 1 100% !important;
+      width: 100%;
+    }
+    .saved-actions .ai-btn {
+      flex: 1 1 100% !important;
+      width: 100%;
+    }
 
     .popover {
       grid-template-columns: repeat(3, 1fr);
@@ -590,7 +674,22 @@
     }
     .popover label { font-size: 0.9rem; padding: 4px 5px; }
 
-    .modal-content { padding: 16px; }
+    .modal-content { padding: 16px; width: 96%; }
+    #exportTextarea { height: 240px; font-size: 12px; }
+
+    .btn-group { flex-wrap: wrap; }
+    .btn-group .action-btn { flex: 1; min-width: 80px; }
+
+    /* AI prompt row — stack vertically */
+    .input-row[style] { flex-direction: column; }
+  }
+
+  @media (max-width: 480px) {
+    .page-header h1 { font-size: 1rem; }
+    .page-header p { font-size: 0.7rem; }
+    .card-title { font-size: 0.72rem; }
+    .action-btn { font-size: 0.85rem; padding: 10px 12px; }
+    .dots-btn { padding: 6px 10px; }
   }
 </style>
 </head>
@@ -613,6 +712,13 @@
     <p class="card-title">Birth Details</p>
     <div class="input-row">
       <div class="input-group">
+        <label>Gender</label>
+        <select id="birthGender">
+          <option value="Girl" selected>Girl</option>
+          <option value="Boy">Boy</option>
+        </select>
+      </div>
+      <div class="input-group">
         <label>Name</label>
         <input type="text" id="birthName" placeholder="e.g. Chamara">
       </div>
@@ -620,13 +726,32 @@
         <label>Date of Birth</label>
         <input type="text" id="birthDate" placeholder="e.g. 1990-01-01">
       </div>
-      <div class="input-group">
+      <div class="input-group" style="position: relative;">
         <label>Time of Birth</label>
-        <input type="text" id="birthTime" placeholder="e.g. 10:30 AM">
+        <input type="text" id="birthTime" placeholder="e.g. 10:30 AM" autocomplete="off">
+        <div id="ampm-popup" style="display:none; position:absolute; top:calc(100% + 4px); left:0; background:var(--card-bg); border:1px solid var(--primary); border-radius:8px; padding:6px; z-index:100; box-shadow:var(--card-shadow); gap:6px;">
+          <button type="button" class="action-btn" style="flex:1; padding:6px 12px; border-radius:6px; font-size:0.85rem;" onclick="setAmPm('AM')">AM</button>
+          <button type="button" class="action-btn" style="flex:1; padding:6px 12px; border-radius:6px; font-size:0.85rem;" onclick="setAmPm('PM')">PM</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Timezone</label>
+        <select id="birthTimezone">
+          <option value="UTC+5.30">UTC+5:30</option>
+          <option value="UTC+6.00">UTC+6:00</option>
+        </select>
       </div>
       <div class="input-group">
         <label>Place of Birth</label>
         <input type="text" id="birthPlace" placeholder="e.g. Colombo, Sri Lanka">
+      </div>
+      <div class="input-group">
+        <label>Label</label>
+        <select id="chartLabel">
+          <option value="🟢">🟢 Green</option>
+          <option value="🟡">🟡 Yellow</option>
+          <option value="🔴">🔴 Red</option>
+        </select>
       </div>
     </div>
   </div>
@@ -714,12 +839,59 @@
 <!-- Saved Charts Section -->
 <div class="card" style="max-width:1040px;">
   <p class="card-title">Saved Charts</p>
-  <div class="saved-actions">
-    <select id="savedChartsDropdown">
+  <div class="saved-actions" style="margin-bottom: 15px;">
+    <select id="savedChartsDropdown" onchange="loadChart()">
       <option value="" disabled selected>Select a saved chart...</option>
     </select>
-    <button class="action-btn" onclick="loadChart()">Load</button>
-    <button class="action-btn reset-btn" onclick="deleteChart()">Delete</button>
+    <div class="dots-dropdown">
+      <button class="dots-btn" onclick="toggleDots(this)">&#8942;</button>
+      <div class="dots-content">
+        <button onclick="deleteChart()">Delete Chart</button>
+      </div>
+    </div>
+  </div>
+  
+  <p class="card-title" style="margin-top: 10px; font-size: 1rem; margin-bottom: 10px;">Compare AI Export</p>
+  <div class="saved-actions">
+    <select id="compareChart1Dropdown" style="flex: 1;">
+      <option value="" disabled selected>Select Girl (Person 1)...</option>
+    </select>
+    <select id="compareChart2Dropdown" style="flex: 1;">
+      <option value="" disabled selected>Select Boy (Person 2)...</option>
+    </select>
+    <button class="action-btn ai-btn" onclick="openCompareExportModal()" style="flex: 0 0 auto;">Export Comparison AI</button>
+  </div>
+</div>
+
+<!-- AI Custom Prompt Section -->
+<div class="card" style="max-width:1040px; margin-bottom: 20px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
+    <p class="card-title" style="margin:0;">AI Custom Prompt</p>
+    <label style="font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <input type="checkbox" id="enableAiPrompt" checked onchange="saveAiPromptSettings()"> Enable when exporting for AI
+    </label>
+  </div>
+  
+  <div class="input-row" style="margin-bottom: 10px; align-items: stretch;">
+    <div class="input-group" style="flex: 2;">
+      <select id="aiPromptSelect" onchange="loadSelectedAiPrompt()" style="padding: 10px 12px; border: 1px solid var(--border-color); background: var(--input-bg); border-radius: 8px; font-family: inherit; font-size: 0.92rem; color: var(--text-main); outline: none;">
+        <option value="new">+ Create New Prompt</option>
+      </select>
+    </div>
+    <div class="input-group" style="flex: 3;">
+      <input type="text" id="aiPromptName" placeholder="Prompt Name (e.g. Detailed Analysis)">
+    </div>
+  </div>
+
+  <textarea id="aiCustomPrompt" placeholder="Enter your custom prompt instructions here..." style="width: 100%; height: 100px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-main); font-family: inherit; resize: vertical; outline: none; transition: border-color 0.15s;"></textarea>
+  <div style="display: flex; justify-content: flex-end; margin-top: 10px; gap: 10px; align-items: stretch;">
+    <button class="action-btn save-btn" style="flex:0 0 auto;" onclick="saveAiPrompt()">Save Prompt</button>
+    <div class="dots-dropdown" id="aiPromptDotsContainer" style="display:none;">
+      <button class="dots-btn" onclick="toggleDots(this)">&#8942;</button>
+      <div class="dots-content">
+        <button onclick="deleteAiPrompt()">Delete Prompt</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -790,50 +962,6 @@
   }
   // ──────────────────────────────────────────────────────────────────────────
   
-  // ── Lagna Modal Logic ─────────────────────────────────────────────────────
-  let currentLagnaChart = null; // 'rasi' or 'navamsa'
-  const lagnaModalOverlay = document.getElementById('lagnaModalOverlay');
-  const lagnaGrid = document.getElementById('lagnaGrid');
-  
-  const signNamesArray = [
-    { id: 1, name: 'මේෂ' }, { id: 2, name: 'වෘෂභ' }, { id: 3, name: 'මිථුන' },
-    { id: 4, name: 'කටක' }, { id: 5, name: 'සිංහ' }, { id: 6, name: 'කන්‍යා' },
-    { id: 7, name: 'තුලා' }, { id: 8, name: 'වෘශ්චික' }, { id: 9, name: 'ධනු' },
-    { id: 10, name: 'මකර' }, { id: 11, name: 'කුම්භ' }, { id: 12, name: 'මීන' }
-  ];
-
-  function openLagnaModal(chartType) {
-    currentLagnaChart = chartType;
-    document.getElementById('lagnaModalTitle').textContent = chartType === 'rasi' ? 'ලග්නය තෝරන්න' : 'නවාංශකය තෝරන්න';
-    
-    lagnaGrid.innerHTML = '';
-    const currentSelector = document.getElementById(`${chartType}-lagna-selector`);
-    const currentValue = currentSelector.getAttribute('data-value');
-
-    signNamesArray.forEach(sign => {
-      const btn = document.createElement('button');
-      btn.className = 'lagna-btn';
-      if (currentValue == sign.id) btn.classList.add('selected');
-      
-      const suffix = chartType === 'rasi' ? 'ලග්නය' : 'නවාංශකය';
-      btn.textContent = `${sign.name} ${suffix}`;
-      
-      btn.onclick = () => {
-        currentSelector.setAttribute('data-value', sign.id);
-        currentSelector.textContent = btn.textContent;
-        closeLagnaModal();
-      };
-      
-      lagnaGrid.appendChild(btn);
-    });
-
-    lagnaModalOverlay.classList.add('active');
-  }
-
-  function closeLagnaModal(e) {
-    if (e && e.target !== lagnaModalOverlay) return;
-    lagnaModalOverlay.classList.remove('active');
-  }
   // ──────────────────────────────────────────────────────────────────────────
 
   const planets = [
@@ -991,15 +1119,43 @@
     
     if (digits.length === 4) {
       let letters = v.replace(/[^AaPp]/g, '').toUpperCase();
-      if (letters.includes('A')) out += ' AM';
-      else if (letters.includes('P')) out += ' PM';
-      else if (!out.endsWith(' ')) out += ' ';
+      if (letters.includes('A')) {
+        out += ' AM';
+        document.getElementById('ampm-popup').style.display = 'none';
+      } else if (letters.includes('P')) {
+        out += ' PM';
+        document.getElementById('ampm-popup').style.display = 'none';
+      } else {
+        if (!out.endsWith(' ')) out += ' ';
+        document.getElementById('ampm-popup').style.display = 'flex';
+      }
+    } else {
+      document.getElementById('ampm-popup').style.display = 'none';
     }
     
     e.target.value = out;
   });
 
-  const selectedLagna = { rasi: 1, navamsa: 1 };
+  function setAmPm(val) {
+    let input = document.getElementById('birthTime');
+    let v = input.value.trim();
+    if (v.endsWith('AM') || v.endsWith('PM')) {
+      v = v.substring(0, v.length - 2).trim();
+    }
+    input.value = v + ' ' + val;
+    document.getElementById('ampm-popup').style.display = 'none';
+    input.focus();
+  }
+
+  // Close popup if clicked outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#birthTime') && !e.target.closest('#ampm-popup')) {
+      const popup = document.getElementById('ampm-popup');
+      if (popup) popup.style.display = 'none';
+    }
+  });
+
+  const selectedLagna = { rasi: null, navamsa: null };
 
   function openLagnaModal(type) {
     document.getElementById('lagnaModalTitle').textContent = type === 'rasi' ? 'ලග්නය තෝරන්න' : 'නවාංශකය තෝරන්න';
@@ -1034,7 +1190,7 @@
       const textDiv = document.querySelector(`#${type}-${i} .comp-text`);
       if(textDiv) textDiv.textContent = '';
     }
-    selectedLagna[type] = 1;
+    selectedLagna[type] = null;
     const selector = document.getElementById(`${type}-lagna-selector`);
     if (selector) selector.textContent = type === 'rasi' ? 'ලග්නය' : 'නවාංශකය';
     
@@ -1049,7 +1205,10 @@
     document.getElementById('birthName').value = '';
     document.getElementById('birthDate').value = '';
     document.getElementById('birthTime').value = '';
+    document.getElementById('birthTimezone').value = 'UTC+5.30';
     document.getElementById('birthPlace').value = '';
+    document.getElementById('chartLabel').value = '🟢';
+    document.getElementById('birthGender').value = 'Girl';
   }
 
   // API Integration for Save/Load
@@ -1058,15 +1217,54 @@
   async function fetchSavedCharts() {
     try {
       const res = await fetch(API_URL);
-      const charts = await res.json();
+      let charts = await res.json();
+      
+      const labelOrder = { '🟢': 1, '🟡': 2, '🔴': 3 };
+      charts.sort((a, b) => {
+        const valA = labelOrder[a.label || '🟢'] || 4;
+        const valB = labelOrder[b.label || '🟢'] || 4;
+        return valA - valB;
+      });
+
       const dropdown = document.getElementById('savedChartsDropdown');
+      const comp1 = document.getElementById('compareChart1Dropdown');
+      const comp2 = document.getElementById('compareChart2Dropdown');
+      
       dropdown.innerHTML = '<option value="" disabled selected>Select a saved chart...</option>';
+      if(comp1) comp1.innerHTML = '<option value="" disabled selected>Select Girl (Person 1)...</option>';
+      if(comp2) comp2.innerHTML = '<option value="" disabled selected>Select Boy (Person 2)...</option>';
+      
+      let girlCount = 0;
+      let boyCount = 0;
+      let lastGirlId = null;
+      let lastBoyId = null;
+
       charts.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
-        opt.textContent = c.id;
-        dropdown.appendChild(opt);
+        const label = c.label || "🟢";
+        opt.textContent = `${label} ${c.id}`;
+        dropdown.appendChild(opt.cloneNode(true));
+        const gender = c.gender || 'Girl'; // Default legacy charts to Girl
+        
+        if (gender === 'Girl') {
+          if(comp1) comp1.appendChild(opt.cloneNode(true));
+          girlCount++;
+          lastGirlId = c.id;
+        } else if (gender === 'Boy') {
+          if(comp2) comp2.appendChild(opt.cloneNode(true));
+          boyCount++;
+          lastBoyId = c.id;
+        }
       });
+
+      if (comp1 && girlCount === 1) {
+        comp1.value = lastGirlId;
+      }
+      if (comp2 && boyCount === 1) {
+        comp2.value = lastBoyId;
+      }
+
       window.savedChartsData = charts;
     } catch (err) {
       console.error('Failed to fetch charts', err);
@@ -1079,8 +1277,34 @@
   async function saveChart() {
     const name = document.getElementById('birthName').value.trim();
     const date = document.getElementById('birthDate').value.trim();
+    const time = document.getElementById('birthTime').value.trim();
+    
     if (!name || !date) {
       alert("Please enter both Name and Date of Birth to save a chart.");
+      return;
+    }
+    
+    const timeUpper = time.toUpperCase();
+    if (!timeUpper.includes('AM') && !timeUpper.includes('PM')) {
+      alert("Please include AM or PM in the Birth Time (e.g. 10:30 AM).");
+      return;
+    }
+
+    if (!selectedLagna.rasi) {
+      alert("Please select a Lagna for the Rasi chart.");
+      return;
+    }
+
+    let navamsaHasData = false;
+    for (let i = 1; i <= 12; i++) {
+      if (state[`navamsa-${i}`] && state[`navamsa-${i}`].length > 0) {
+        navamsaHasData = true;
+        break;
+      }
+    }
+
+    if (navamsaHasData && !selectedLagna.navamsa) {
+      alert("Please select a Lagna for the Navamsa chart since it contains data.");
       return;
     }
 
@@ -1091,12 +1315,19 @@
       id,
       name,
       date,
-      time: document.getElementById('birthTime').value,
+      time: time,
+      timezone: document.getElementById('birthTimezone').value,
       place: document.getElementById('birthPlace').value,
-      rasiLagna: selectedLagna.rasi || "1",
-      navamsaLagna: selectedLagna.navamsa || "1",
+      label: document.getElementById('chartLabel').value,
+      gender: document.getElementById('birthGender').value,
+      rasiLagna: selectedLagna.rasi,
+      navamsaLagna: selectedLagna.navamsa,
       state: state
     };
+
+    if (!confirm(`Are you sure you want to save the chart for "${id}"? This will overwrite any existing chart with the same name and year.`)) {
+      return;
+    }
 
     try {
       const res = await fetch(API_URL, {
@@ -1129,18 +1360,21 @@
     document.getElementById('birthName').value = chartData.name || '';
     document.getElementById('birthDate').value = chartData.date || '';
     document.getElementById('birthTime').value = chartData.time || '';
+    document.getElementById('birthTimezone').value = chartData.timezone || 'UTC+5.30';
     document.getElementById('birthPlace').value = chartData.place || '';
+    document.getElementById('chartLabel').value = chartData.label || '🟢';
+    document.getElementById('birthGender').value = chartData.gender || 'Girl';
 
     const rasiSelector = document.getElementById('rasi-lagna-selector');
     if (rasiSelector && chartData.rasiLagna) {
-      rasiSelector.setAttribute('data-value', chartData.rasiLagna);
-      rasiSelector.textContent = chartData.rasiLagnaText || (signNamesArray.find(s => s.id == chartData.rasiLagna)?.name + ' ලග්නය');
+      selectedLagna.rasi = chartData.rasiLagna;
+      rasiSelector.textContent = signNames[chartData.rasiLagna].split(' ')[0] + ' ලග්නය';
     }
     
     const navamsaSelector = document.getElementById('navamsa-lagna-selector');
     if (navamsaSelector && chartData.navamsaLagna) {
-      navamsaSelector.setAttribute('data-value', chartData.navamsaLagna);
-      navamsaSelector.textContent = chartData.navamsaLagnaText || (signNamesArray.find(s => s.id == chartData.navamsaLagna)?.name + ' නවාංශකය');
+      selectedLagna.navamsa = chartData.navamsaLagna;
+      navamsaSelector.textContent = signNames[chartData.navamsaLagna].split(' ')[0] + ' නවාංශකය';
     }
 
     if (chartData.state) {
@@ -1220,20 +1454,33 @@
   }
 
   function getChartPromptData(type) {
-    const titleSelector = document.getElementById(`${type}-lagna-selector`);
-    let lagnaIdx = 1;
+    let lagnaIdx = selectedLagna[type] ? parseInt(selectedLagna[type]) : 1;
     let titleText = 'Unknown';
-    if (titleSelector && titleSelector.getAttribute('data-value')) {
-      lagnaIdx = parseInt(titleSelector.getAttribute('data-value')) || 1;
-      titleText = titleSelector.textContent;
+    if (selectedLagna[type]) {
+      titleText = signNames[selectedLagna[type]].split(' ')[0] + (type === 'rasi' ? ' ලග්නය' : ' නවාංශකය');
+    } else {
+       const titleSelector = document.getElementById(`${type}-lagna-selector`);
+       if (titleSelector && titleSelector.textContent !== 'ලග්නය' && titleSelector.textContent !== 'නවාංශකය') {
+         titleText = titleSelector.textContent;
+       }
     }
 
     let data = `**Ascendant (Lagna):** ${titleText}\n\n`;
     data += `**Planetary Positions by House (Bhava):**\n`;
     
+    // Print all 12 houses starting from Lagna
+    // In Sri Lankan North Indian charts, the houses are FIXED to the UI compartments.
+    // 1st House = Top-Middle (rasi-2), and it proceeds anti-clockwise.
+    const houseToComp = [0, 2, 1, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3];
+    
     for(let h = 1; h <= 12; h++) {
+      // The zodiac sign for the house progresses clockwise from the Lagna sign
       let signIdx = ((lagnaIdx + h - 2) % 12) + 1;
-      const val = state[`${type}-${signIdx}`];
+      
+      // The UI compartment for the house is fixed
+      let compIdx = houseToComp[h];
+      
+      const val = state[`${type}-${compIdx}`];
       const planetsStr = val && val.length > 0 ? val.join(', ') : '[Empty]';
       data += `- ${getOrdinal(h)} House (${signNames[signIdx]}): ${planetsStr}\n`;
     }
@@ -1249,20 +1496,111 @@
     return true;
   }
 
+  function generateAIPromptFromData(chartData) {
+    const { name, date, time, timezone, place, rasiLagna, navamsaLagna, state: cState, gender } = chartData;
+    let header = `**Birth Details for ${name || 'Unknown'}:**\n`;
+    if (gender) header += `- Gender: ${gender}\n`;
+    if (date) header += `- Date: ${date}\n`;
+    if (time) header += `- Time: ${time} ${timezone ? '(' + timezone + ')' : ''}\n`;
+    if (place) header += `- Place: ${place}\n`;
+    header += `\n`;
+
+    function getChartPromptDataLocal(t, lagna, st) {
+      let titleText = lagna ? signNames[lagna].split(' ')[0] + (t === 'rasi' ? ' ලග්නය' : ' නවාංශකය') : 'Unknown';
+      let lagnaIdx = parseInt(lagna) || 1;
+      
+      let data = `**Ascendant (Lagna):** ${titleText}\n\n`;
+      data += `**Planetary Positions by House (Bhava):**\n`;
+      const houseToComp = [0, 2, 1, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3];
+      for(let h = 1; h <= 12; h++) {
+        let signIdx = ((lagnaIdx + h - 2) % 12) + 1;
+        let compIdx = houseToComp[h];
+        const val = st[`${t}-${compIdx}`];
+        const planetsStr = val && val.length > 0 ? val.join(', ') : '[Empty]';
+        data += `- ${getOrdinal(h)} House (${signNames[signIdx]}): ${planetsStr}\n`;
+      }
+      return data;
+    }
+
+    function isChartEmptyLocal(t, st) {
+      for (let i = 1; i <= 12; i++) {
+        if (st[`${t}-${i}`] && st[`${t}-${i}`].length > 0) return false;
+      }
+      return true;
+    }
+
+    let prompt = header;
+    prompt += `### 1. Rasi Chart (D1)\n` + getChartPromptDataLocal('rasi', rasiLagna, cState) + `\n\n`;
+    
+    if (!isChartEmptyLocal('navamsa', cState)) {
+      prompt += `### 2. Navamsa Chart (D9)\n` + getChartPromptDataLocal('navamsa', navamsaLagna, cState);
+    } else {
+      prompt += `*(Navamsa Chart not provided)*\n`;
+    }
+    
+    return prompt;
+  }
+
+  function openCompareExportModal() {
+    const id1 = document.getElementById('compareChart1Dropdown').value;
+    const id2 = document.getElementById('compareChart2Dropdown').value;
+    
+    if (!id1 || !id2) {
+      alert("Please select two people to compare.");
+      return;
+    }
+    if (id1 === id2) {
+      alert("Please select two different people to compare.");
+      return;
+    }
+
+    const chart1 = window.savedChartsData.find(c => c.id === id1);
+    const chart2 = window.savedChartsData.find(c => c.id === id2);
+    
+    if (!chart1 || !chart2) return;
+
+    let finalPrompt = `# Person 1 (Girl)\n\n` + generateAIPromptFromData(chart1) + `\n\n---\n\n`;
+    finalPrompt += `# Person 2 (Boy)\n\n` + generateAIPromptFromData(chart2);
+
+    if (document.getElementById('enableAiPrompt').checked) {
+      const customPrompt = document.getElementById('aiCustomPrompt').value.trim();
+      if (customPrompt) {
+        finalPrompt += `\n\n### Custom Instructions\n${customPrompt}`;
+      }
+    }
+
+    const modal = document.getElementById('exportModal');
+    const textarea = document.getElementById('exportTextarea');
+    const title = document.getElementById('modalTitle');
+    
+    title.textContent = `AI Prompt - Compare Charts`;
+    textarea.value = finalPrompt;
+    
+    modal.classList.add('active');
+  }
+
   function generateAIPrompt(type) {
+    const bName = document.getElementById('birthName').value.trim();
     const bDate = document.getElementById('birthDate').value;
     const bTime = document.getElementById('birthTime').value;
     const bPlace = document.getElementById('birthPlace').value;
+    const bGender = document.getElementById('birthGender').value;
     
     let header = ``;
-    if (bDate || bTime || bPlace) {
-      header += `**Birth Details:**\n`;
+    if (bName || bDate || bTime || bPlace || bGender) {
+      if (bName) {
+        header += `**Birth Details for ${bName}:**\n`;
+      } else {
+        header += `**Birth Details:**\n`;
+      }
+      if (bGender) header += `- Gender: ${bGender}\n`;
       if (bDate) header += `- Date: ${bDate}\n`;
       if (bTime) header += `- Time: ${bTime}\n`;
       if (bPlace) header += `- Place: ${bPlace}\n`;
       header += `\n`;
     }
 
+    let finalPrompt = '';
     if (type === 'both') {
       let prompt = header + `### 1. Rasi Chart (D1)\n` + getChartPromptData('rasi') + `\n\n`;
       if (!isChartEmpty('navamsa')) {
@@ -1270,11 +1608,19 @@
       } else {
         prompt += `*(Navamsa Chart not provided)*\n`;
       }
-      return prompt;
+      finalPrompt = prompt;
     } else {
       const chartName = type === 'rasi' ? 'Rasi (D1)' : 'Navamsa (D9)';
-      return header + `**Chart Type:** ${chartName}\n` + getChartPromptData(type);
+      finalPrompt = header + `**Chart Type:** ${chartName}\n` + getChartPromptData(type);
     }
+    
+    if (document.getElementById('enableAiPrompt').checked) {
+      const customPrompt = document.getElementById('aiCustomPrompt').value.trim();
+      if (customPrompt) {
+        finalPrompt += `\n\n### Custom Instructions\n${customPrompt}`;
+      }
+    }
+    return finalPrompt;
   }
 
   function openExportModal(type, format) {
@@ -1341,6 +1687,161 @@
       fallbackCopy();
     }
   }
+
+  // AI Custom Prompt Logic
+  let aiPrompts = [];
+  
+  window.addEventListener('DOMContentLoaded', async () => {
+    const savedEnable = localStorage.getItem('enableAiPrompt');
+    if (savedEnable !== null) {
+      document.getElementById('enableAiPrompt').checked = savedEnable === 'true';
+    }
+    
+    try {
+      const res = await fetch('/api/prompts');
+      aiPrompts = await res.json();
+    } catch (err) {
+      console.error('Failed to load custom prompts from server', err);
+      aiPrompts = JSON.parse(localStorage.getItem('aiPromptsList') || '[]');
+    }
+
+    // Migration for old single prompt
+    const oldPrompt = localStorage.getItem('aiCustomPrompt');
+    if (oldPrompt && aiPrompts.length === 0) {
+      aiPrompts.push({ id: Date.now().toString(), name: 'Default Prompt', text: oldPrompt });
+      localStorage.removeItem('aiCustomPrompt');
+      savePromptsList();
+    }
+    
+    renderAiPromptsDropdown();
+    
+    // Select last active prompt
+    const lastActive = localStorage.getItem('activeAiPromptId');
+    if (lastActive && aiPrompts.find(p => p.id === lastActive)) {
+      document.getElementById('aiPromptSelect').value = lastActive;
+      loadSelectedAiPrompt();
+    } else if (aiPrompts.length > 0) {
+      document.getElementById('aiPromptSelect').value = aiPrompts[0].id;
+      loadSelectedAiPrompt();
+    }
+  });
+
+  async function savePromptsList() {
+    localStorage.setItem('aiPromptsList', JSON.stringify(aiPrompts));
+    try {
+      await fetch('/api/prompts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(aiPrompts)
+      });
+    } catch (err) {
+      console.error('Failed to sync custom prompts to server', err);
+    }
+  }
+
+  function saveAiPromptSettings() {
+    const enable = document.getElementById('enableAiPrompt').checked;
+    localStorage.setItem('enableAiPrompt', enable);
+  }
+
+  function renderAiPromptsDropdown() {
+    const select = document.getElementById('aiPromptSelect');
+    select.innerHTML = '<option value="new">+ Create New Prompt</option>';
+    aiPrompts.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      select.appendChild(opt);
+    });
+  }
+
+  function loadSelectedAiPrompt() {
+    const val = document.getElementById('aiPromptSelect').value;
+    const delBtn = document.getElementById('aiPromptDotsContainer');
+    
+    if (val === 'new') {
+      document.getElementById('aiPromptName').value = '';
+      document.getElementById('aiCustomPrompt').value = '';
+      delBtn.style.display = 'none';
+      localStorage.removeItem('activeAiPromptId');
+    } else {
+      const p = aiPrompts.find(x => x.id === val);
+      if (p) {
+        document.getElementById('aiPromptName').value = p.name;
+        document.getElementById('aiCustomPrompt').value = p.text;
+        delBtn.style.display = 'block';
+        localStorage.setItem('activeAiPromptId', p.id);
+      }
+    }
+  }
+
+  function saveAiPrompt() {
+    saveAiPromptSettings();
+    const name = document.getElementById('aiPromptName').value.trim();
+    const text = document.getElementById('aiCustomPrompt').value.trim();
+    const select = document.getElementById('aiPromptSelect');
+    
+    if (!name) {
+      alert("Please enter a Prompt Name.");
+      return;
+    }
+    
+    if (select.value === 'new') {
+      const newId = Date.now().toString();
+      aiPrompts.push({ id: newId, name, text });
+      savePromptsList();
+      renderAiPromptsDropdown();
+      select.value = newId;
+      loadSelectedAiPrompt();
+      alert('New AI Prompt created!');
+    } else {
+      const p = aiPrompts.find(x => x.id === select.value);
+      if (p) {
+        p.name = name;
+        p.text = text;
+        savePromptsList();
+        renderAiPromptsDropdown();
+        select.value = p.id; // Keep selected
+        alert('AI Prompt updated!');
+      }
+    }
+  }
+
+  function deleteAiPrompt() {
+    const select = document.getElementById('aiPromptSelect');
+    if (select.value === 'new') return;
+    
+    if (confirm("Are you sure you want to delete this prompt?")) {
+      aiPrompts = aiPrompts.filter(x => x.id !== select.value);
+      savePromptsList();
+      renderAiPromptsDropdown();
+      select.value = 'new';
+      loadSelectedAiPrompt();
+      alert('Prompt deleted.');
+    }
+  }
+
+  // Handle 3-dots dropdown toggling
+  function toggleDots(btn) {
+    const content = btn.nextElementSibling;
+    const isVisible = content.style.display === 'block';
+    
+    // Hide all open dots
+    document.querySelectorAll('.dots-content').forEach(c => c.style.display = 'none');
+    
+    if (!isVisible) {
+      content.style.display = 'block';
+    }
+    
+    // Prevent event from bubbling up to the document click listener
+    if (event) event.stopPropagation();
+  }
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dots-content').forEach(c => c.style.display = 'none');
+  });
+
 </script>
 </body>
 </html>

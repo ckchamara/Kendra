@@ -6,6 +6,7 @@ const path = require('path');
 const app = express();
 const PORT = 2000;
 const DB_FILE = path.join(__dirname, 'db.json');
+const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
 
 app.use(cors());
 app.use(express.json());
@@ -13,6 +14,9 @@ app.use(express.static(__dirname));
 
 if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify([]));
+}
+if (!fs.existsSync(PROMPTS_FILE)) {
+  fs.writeFileSync(PROMPTS_FILE, JSON.stringify([]));
 }
 
 app.get('/api/charts', (req, res) => {
@@ -54,6 +58,24 @@ app.delete('/api/charts/:id', (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete chart' });
+  }
+});
+
+app.get('/api/prompts', (req, res) => {
+  try {
+    const data = fs.readFileSync(PROMPTS_FILE, 'utf8');
+    res.json(JSON.parse(data));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read prompts database' });
+  }
+});
+
+app.post('/api/prompts', (req, res) => {
+  try {
+    fs.writeFileSync(PROMPTS_FILE, JSON.stringify(req.body, null, 2));
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save prompts' });
   }
 });
 
