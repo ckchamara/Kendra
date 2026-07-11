@@ -29,7 +29,14 @@ app.post('/api/charts', (req, res) => {
     const newChart = req.body;
     const data = fs.readFileSync(DB_FILE, 'utf8');
     let charts = JSON.parse(data);
-    charts.push(newChart);
+    
+    const existingIndex = charts.findIndex(c => c.id === newChart.id);
+    if (existingIndex !== -1) {
+      charts[existingIndex] = newChart;
+    } else {
+      charts.push(newChart);
+    }
+    
     fs.writeFileSync(DB_FILE, JSON.stringify(charts, null, 2));
     res.json({ success: true });
   } catch (err) {

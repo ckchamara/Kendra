@@ -8,13 +8,14 @@
 <style>
   :root {
     --border-color: #94A3B8;
-    --hover-bg: #EFF6FF;
-    --active-bg: #DBEAFE;
-    --primary: #3B82F6;
-    --primary-hover: #2563EB;
-    --bg-color: #F1F5F9;
+    --hover-bg: #EEF2FF;
+    --active-bg: #E0E7FF;
+    --primary: #4F46E5;
+    --primary-hover: #4338CA;
+    --bg-color: #F8FAFC;
     --card-bg: #FFFFFF;
-    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    --chart-shadow: 0 10px 30px rgba(0,0,0,0.08);
     --text-main: #0F172A;
     --text-muted: #64748B;
     --radius: 14px;
@@ -23,28 +24,29 @@
     --red: #EF4444;
     --header-bg: #FFFFFF;
     --header-border: #E2E8F0;
-    --input-bg: #F1F5F9;
+    --input-bg: #F8FAFC;
     --popover-bg: #FFFFFF;
   }
 
   [data-theme="dark"] {
-    --border-color: #334155;
-    --hover-bg: #1E293B;
-    --active-bg: #1E3A5F;
-    --primary: #60A5FA;
-    --primary-hover: #3B82F6;
-    --bg-color: #0F172A;
-    --card-bg: #1E293B;
-    --card-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
-    --text-main: #F1F5F9;
-    --text-muted: #94A3B8;
+    --border-color: #374151;
+    --hover-bg: #1F2937;
+    --active-bg: #374151;
+    --primary: #6366F1;
+    --primary-hover: #4F46E5;
+    --bg-color: #0B0F19;
+    --card-bg: #111827;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    --chart-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    --text-main: #F9FAFB;
+    --text-muted: #9CA3AF;
     --green: #34D399;
     --purple: #A78BFA;
     --red: #F87171;
-    --header-bg: #1E293B;
-    --header-border: #334155;
-    --input-bg: #0F172A;
-    --popover-bg: #1E293B;
+    --header-bg: #111827;
+    --header-border: #374151;
+    --input-bg: #1F2937;
+    --popover-bg: #111827;
   }
   
   * { box-sizing: border-box; }
@@ -146,13 +148,14 @@
   }
 
   .chart-wrapper {
-    padding: 12px;
+    padding: 14px;
     background: var(--card-bg);
-    box-shadow: var(--card-shadow);
+    box-shadow: var(--chart-shadow);
     border-radius: var(--radius);
     width: 100%;
     display: flex;
     justify-content: center;
+    transition: box-shadow 0.25s, background 0.25s;
   }
 
   .chart {
@@ -252,18 +255,30 @@
   .comp-text {
     position: absolute;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    align-content: center;
+    gap: 3px;
     text-align: center;
-    font-weight: 600;
-    color: var(--text-main);
-    font-size: clamp(0.85rem, 2.5vmin, 1.1rem);
     pointer-events: none;
     z-index: 1;
     padding: 3%;
     box-sizing: border-box;
-    word-break: break-word;
-    line-height: 1.4;
+  }
+  
+  .planet-pill {
+    background: var(--primary);
+    color: #FFFFFF;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 4px;
+    line-height: 1.2;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  [data-theme="dark"] .planet-pill {
+    color: #FFFFFF;
   }
 
   .full-comp .comp-text {
@@ -306,18 +321,25 @@
 
   .popover label {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 6px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-main);
-    padding: 5px 8px;
-    border-radius: 6px;
-    transition: background 0.12s;
-    font-weight: 500;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+    font-weight: 600;
   }
   .popover label:hover { background: var(--hover-bg); }
-  .popover input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+  .popover label.active-chip {
+    background: var(--primary);
+    color: #FFFFFF;
+    border-color: var(--primary);
+  }
+  .popover input[type="checkbox"] { display: none; }
 
   /* Buttons */
   .btn-group {
@@ -408,7 +430,7 @@
   .input-group input:focus {
     outline: none;
     border-color: var(--primary);
-    background: #fff;
+    background: var(--card-bg);
     box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
   }
 
@@ -453,7 +475,7 @@
   }
   .modal-overlay.active { opacity: 1; pointer-events: all; }
   .modal-content {
-    background: #fff;
+    background: var(--card-bg);
     width: 92%;
     max-width: 580px;
     border-radius: var(--radius);
@@ -514,6 +536,27 @@
   body, .page-header, .card, .chart-wrapper, .modal-content,
   .input-group input, .saved-actions select, #exportTextarea,
   .popover, .action-btn { transition: background 0.25s, color 0.25s, border-color 0.25s; }
+
+  /* Lagna Selector Modal */
+  .lagna-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px 0;
+  }
+  .lagna-btn {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .lagna-btn:hover { background: var(--hover-bg); border-color: var(--primary); }
+  .lagna-btn.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
 
   /* Responsive */
   @media (max-width: 768px) {
@@ -606,23 +649,7 @@
         </div>
         <div class="cell"><div class="compartment full-comp" id="rasi-11"><div class="comp-text"></div></div></div>
         <div class="cell center-cell">
-          <select class="center-input title-select">
-            <option value="" disabled>ලග්නය / නවාංශකය</option>
-            <optgroup label="ලග්නය">
-              <option value="1" selected>මේෂ ලග්නය</option>
-              <option value="2">වෘෂභ ලග්නය</option>
-              <option value="3">මිථුන ලග්නය</option>
-              <option value="4">කටක ලග්නය</option>
-              <option value="5">සිංහ ලග්නය</option>
-              <option value="6">කන්‍යා ලග්නය</option>
-              <option value="7">තුලා ලග්නය</option>
-              <option value="8">වෘශ්චික ලග්නය</option>
-              <option value="9">ධනු ලග්නය</option>
-              <option value="10">මකර ලග්නය</option>
-              <option value="11">කුම්භ ලග්නය</option>
-              <option value="12">මීන ලග්නය</option>
-            </optgroup>
-          </select>
+          <div class="center-input title-select" id="rasi-lagna-selector" onclick="openLagnaModal('rasi')">ලග්නය</div>
         </div>
         <div class="cell"><div class="compartment full-comp" id="rasi-5"><div class="comp-text"></div></div></div>
         <div class="cell">
@@ -661,23 +688,7 @@
         </div>
         <div class="cell"><div class="compartment full-comp" id="navamsa-11"><div class="comp-text"></div></div></div>
         <div class="cell center-cell">
-          <select class="center-input title-select">
-            <option value="" disabled>ලග්නය / නවාංශකය</option>
-            <optgroup label="නවාංශකය">
-              <option value="1" selected>මේෂ නවාංශකය</option>
-              <option value="2">වෘෂභ නවාංශකය</option>
-              <option value="3">මිථුන නවාංශකය</option>
-              <option value="4">කටක නවාංශකය</option>
-              <option value="5">සිංහ නවාංශකය</option>
-              <option value="6">කන්‍යා නවාංශකය</option>
-              <option value="7">තුලා නවාංශකය</option>
-              <option value="8">වෘශ්චික නවාංශකය</option>
-              <option value="9">ධනු නවාංශකය</option>
-              <option value="10">මකර නවාංශකය</option>
-              <option value="11">කුම්භ නවාංශකය</option>
-              <option value="12">මීන නවාංශකය</option>
-            </optgroup>
-          </select>
+          <div class="center-input title-select" id="navamsa-lagna-selector" onclick="openLagnaModal('navamsa')">නවාංශකය</div>
         </div>
         <div class="cell"><div class="compartment full-comp" id="navamsa-5"><div class="comp-text"></div></div></div>
         <div class="cell">
@@ -738,6 +749,19 @@
   </div>
 </div>
 
+<!-- Lagna Selector Modal -->
+<div class="modal-overlay" id="lagnaModalOverlay" onclick="closeLagnaModal(event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="lagnaModalTitle">Select</h3>
+      <button class="close-modal" onclick="closeLagnaModal()">×</button>
+    </div>
+    <div class="lagna-grid" id="lagnaGrid">
+      <!-- Buttons populated by JS -->
+    </div>
+  </div>
+</div>
+
 <script>
   // ── Dark Mode ──────────────────────────────────────────────────────────────
   const html = document.documentElement;
@@ -763,6 +787,52 @@
     applyTheme(saved === 'dark');
   } else {
     applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+  
+  // ── Lagna Modal Logic ─────────────────────────────────────────────────────
+  let currentLagnaChart = null; // 'rasi' or 'navamsa'
+  const lagnaModalOverlay = document.getElementById('lagnaModalOverlay');
+  const lagnaGrid = document.getElementById('lagnaGrid');
+  
+  const signNamesArray = [
+    { id: 1, name: 'මේෂ' }, { id: 2, name: 'වෘෂභ' }, { id: 3, name: 'මිථුන' },
+    { id: 4, name: 'කටක' }, { id: 5, name: 'සිංහ' }, { id: 6, name: 'කන්‍යා' },
+    { id: 7, name: 'තුලා' }, { id: 8, name: 'වෘශ්චික' }, { id: 9, name: 'ධනු' },
+    { id: 10, name: 'මකර' }, { id: 11, name: 'කුම්භ' }, { id: 12, name: 'මීන' }
+  ];
+
+  function openLagnaModal(chartType) {
+    currentLagnaChart = chartType;
+    document.getElementById('lagnaModalTitle').textContent = chartType === 'rasi' ? 'ලග්නය තෝරන්න' : 'නවාංශකය තෝරන්න';
+    
+    lagnaGrid.innerHTML = '';
+    const currentSelector = document.getElementById(`${chartType}-lagna-selector`);
+    const currentValue = currentSelector.getAttribute('data-value');
+
+    signNamesArray.forEach(sign => {
+      const btn = document.createElement('button');
+      btn.className = 'lagna-btn';
+      if (currentValue == sign.id) btn.classList.add('selected');
+      
+      const suffix = chartType === 'rasi' ? 'ලග්නය' : 'නවාංශකය';
+      btn.textContent = `${sign.name} ${suffix}`;
+      
+      btn.onclick = () => {
+        currentSelector.setAttribute('data-value', sign.id);
+        currentSelector.textContent = btn.textContent;
+        closeLagnaModal();
+      };
+      
+      lagnaGrid.appendChild(btn);
+    });
+
+    lagnaModalOverlay.classList.add('active');
+  }
+
+  function closeLagnaModal(e) {
+    if (e && e.target !== lagnaModalOverlay) return;
+    lagnaModalOverlay.classList.remove('active');
   }
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -794,8 +864,10 @@
       
       if (e.target.checked) {
         state[compId].push(p);
+        label.classList.add('active-chip');
       } else {
         state[compId] = state[compId].filter(val => val !== p);
+        label.classList.remove('active-chip');
       }
       updateCompartmentText(activeCompartment);
     });
@@ -809,7 +881,14 @@
     const textDiv = comp.querySelector('.comp-text');
     const selected = state[comp.id] || [];
     const orderedSelected = planets.filter(p => selected.includes(p));
-    textDiv.textContent = orderedSelected.join(',');
+    
+    textDiv.innerHTML = '';
+    orderedSelected.forEach(p => {
+      const span = document.createElement('span');
+      span.className = 'planet-pill';
+      span.textContent = p;
+      textDiv.appendChild(span);
+    });
   }
 
   function closePopover() {
@@ -832,7 +911,13 @@
 
       const selected = state[comp.id] || [];
       popover.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        cb.checked = selected.includes(cb.value);
+        const isChecked = selected.includes(cb.value);
+        cb.checked = isChecked;
+        if (isChecked) {
+          cb.parentElement.classList.add('active-chip');
+        } else {
+          cb.parentElement.classList.remove('active-chip');
+        }
       });
 
       popover.style.visibility = 'hidden';
@@ -914,6 +999,34 @@
     e.target.value = out;
   });
 
+  const selectedLagna = { rasi: 1, navamsa: 1 };
+
+  function openLagnaModal(type) {
+    document.getElementById('lagnaModalTitle').textContent = type === 'rasi' ? 'ලග්නය තෝරන්න' : 'නවාංශකය තෝරන්න';
+    const grid = document.getElementById('lagnaGrid');
+    grid.innerHTML = '';
+    
+    for (let i = 1; i <= 12; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'lagna-btn';
+      if (selectedLagna[type] == i) btn.classList.add('selected');
+      btn.textContent = signNames[i].split(' ')[0];
+      btn.onclick = () => {
+        selectedLagna[type] = i;
+        document.getElementById(`${type}-lagna-selector`).textContent = signNames[i].split(' ')[0] + (type === 'rasi' ? ' ලග්නය' : ' නවාංශකය');
+        closeLagnaModal();
+      };
+      grid.appendChild(btn);
+    }
+    
+    document.getElementById('lagnaModalOverlay').classList.add('active');
+  }
+
+  function closeLagnaModal(e) {
+    if (e && e.target !== document.getElementById('lagnaModalOverlay')) return;
+    document.getElementById('lagnaModalOverlay').classList.remove('active');
+  }
+
   // Reset Logic
   function resetChart(type) {
     for(let i=1; i<=12; i++) {
@@ -921,8 +1034,9 @@
       const textDiv = document.querySelector(`#${type}-${i} .comp-text`);
       if(textDiv) textDiv.textContent = '';
     }
-    const select = document.querySelector(`#${type}-chart .title-select`);
-    if (select) select.value = "1";
+    selectedLagna[type] = 1;
+    const selector = document.getElementById(`${type}-lagna-selector`);
+    if (selector) selector.textContent = type === 'rasi' ? 'ලග්නය' : 'නවාංශකය';
     
     if (activeCompartment && activeCompartment.id.startsWith(type)) {
       closePopover();
@@ -973,17 +1087,14 @@
     const year = date.split('-')[0] || date;
     const id = `${year} - ${name}`;
 
-    const rasiSelect = document.querySelector('#rasi-chart .title-select');
-    const navamsaSelect = document.querySelector('#navamsa-chart .title-select');
-
     const chartData = {
       id,
       name,
       date,
       time: document.getElementById('birthTime').value,
       place: document.getElementById('birthPlace').value,
-      rasiLagna: rasiSelect ? rasiSelect.value : "1",
-      navamsaLagna: navamsaSelect ? navamsaSelect.value : "1",
+      rasiLagna: selectedLagna.rasi || "1",
+      navamsaLagna: selectedLagna.navamsa || "1",
       state: state
     };
 
@@ -1020,11 +1131,17 @@
     document.getElementById('birthTime').value = chartData.time || '';
     document.getElementById('birthPlace').value = chartData.place || '';
 
-    const rasiSelect = document.querySelector('#rasi-chart .title-select');
-    if (rasiSelect && chartData.rasiLagna) rasiSelect.value = chartData.rasiLagna;
+    const rasiSelector = document.getElementById('rasi-lagna-selector');
+    if (rasiSelector && chartData.rasiLagna) {
+      rasiSelector.setAttribute('data-value', chartData.rasiLagna);
+      rasiSelector.textContent = chartData.rasiLagnaText || (signNamesArray.find(s => s.id == chartData.rasiLagna)?.name + ' ලග්නය');
+    }
     
-    const navamsaSelect = document.querySelector('#navamsa-chart .title-select');
-    if (navamsaSelect && chartData.navamsaLagna) navamsaSelect.value = chartData.navamsaLagna;
+    const navamsaSelector = document.getElementById('navamsa-lagna-selector');
+    if (navamsaSelector && chartData.navamsaLagna) {
+      navamsaSelector.setAttribute('data-value', chartData.navamsaLagna);
+      navamsaSelector.textContent = chartData.navamsaLagnaText || (signNamesArray.find(s => s.id == chartData.navamsaLagna)?.name + ' නවාංශකය');
+    }
 
     if (chartData.state) {
       Object.keys(chartData.state).forEach(key => {
@@ -1070,10 +1187,10 @@
       const val = state[`${type}-${i}`];
       s[i] = val && val.length > 0 ? val.join(',') : '';
     }
-    const titleSelect = document.querySelector(`#${type}-chart .title-select`);
+    const titleSelector = document.getElementById(`${type}-lagna-selector`);
     let titleText = 'Unknown';
-    if (titleSelect && titleSelect.options.length > 0) {
-      titleText = titleSelect.options[titleSelect.selectedIndex].text;
+    if (titleSelector && titleSelector.textContent !== 'ලග්නය' && titleSelector.textContent !== 'නවාංශකය') {
+      titleText = titleSelector.textContent;
     }
     const t = padStr(titleText, 26);
 
@@ -1103,12 +1220,12 @@
   }
 
   function getChartPromptData(type) {
-    const titleSelect = document.querySelector(`#${type}-chart .title-select`);
+    const titleSelector = document.getElementById(`${type}-lagna-selector`);
     let lagnaIdx = 1;
     let titleText = 'Unknown';
-    if (titleSelect && titleSelect.options.length > 0) {
-      lagnaIdx = parseInt(titleSelect.value) || 1;
-      titleText = titleSelect.options[titleSelect.selectedIndex].text;
+    if (titleSelector && titleSelector.getAttribute('data-value')) {
+      lagnaIdx = parseInt(titleSelector.getAttribute('data-value')) || 1;
+      titleText = titleSelector.textContent;
     }
 
     let data = `**Ascendant (Lagna):** ${titleText}\n\n`;
